@@ -1,12 +1,13 @@
 package com.osa.desafio.agencias.service;
 
+import com.osa.desafio.agencias.handler.AgenciaJaCadastradaException;
+import com.osa.desafio.agencias.handler.AgenciaNaoEncontrada;
 import com.osa.desafio.agencias.models.Agencia;
 import com.osa.desafio.agencias.repository.AgenciaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class AgenciaService {
@@ -21,8 +22,8 @@ public class AgenciaService {
         return agenciaRepository.findAll();
     }
 
-    public Optional<Agencia> getAgenciaPeloID(Long id){
-        return agenciaRepository.findById(id);
+    public Agencia getAgenciaPeloID(Long id){
+        return agenciaRepository.findById(id).orElseThrow(() -> new AgenciaNaoEncontrada(("Agencia não encontrada no sistema.")));
     }
 
     public Map<String, Object> getAgenciaMaisProxima(Double coordX, Double coordY) {
@@ -44,13 +45,13 @@ public class AgenciaService {
                     dados.put("distancia", distancia);
                     return dados;
                 })
-                .min(Comparator.comparingDouble(m -> (Double) m.get("distancia"))) // pega o menor
-                .orElse(null);
+                .min(Comparator.comparingDouble(m -> (Double) m.get("distancia")))
+                .orElseThrow(() -> new AgenciaNaoEncontrada(("Nenhuma agencia encontrada.")));
     }
 
-    public Agencia postNovaAgencia(Agencia agencia) {
+    public Agencia postNovaAgencia(Agencia agencia) throws AgenciaJaCadastradaException {
         if(agenciaRepository.existsByNome(agencia.getNome())){
-            throw new IllegalArgumentException("Agencia já cadastrada no sistema!");
+            throw new AgenciaJaCadastradaException("Agencia já cadastrada no sistema!");
         }
         return agenciaRepository.save(agencia);
     }

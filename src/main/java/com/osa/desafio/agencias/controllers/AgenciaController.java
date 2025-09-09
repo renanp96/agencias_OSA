@@ -4,7 +4,9 @@ import com.osa.desafio.agencias.models.Agencia;
 import com.osa.desafio.agencias.service.AgenciaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -17,8 +19,6 @@ public class AgenciaController {
     @Autowired
     private AgenciaService agenciaService;
 
-    //Get Mappings//
-
     @GetMapping
     @Operation(summary = "Lista todas as agências.")
     public List<Agencia> getTodasAgencias(){
@@ -26,19 +26,25 @@ public class AgenciaController {
     }
 
     @GetMapping("/distancia")
-    @Operation(summary = "Retorna as agencias mais proximas com base nas coordenadas informadas.")
-    public Map<String, Object> getBuscarAgenciaProxima(@RequestParam double coordX, @RequestParam double coordY){
+    @Operation(summary = "Retorna as agências mais próximas com base nas coordenadas informadas.")
+    public Map<String, Object> getBuscarAgenciaProxima(@RequestParam double coordX, @RequestParam double coordY) {
         return agenciaService.getAgenciaMaisProxima(coordX, coordY);
     }
 
-    //Post Mappings//
+
+    @GetMapping("consultar/{id}")
+    @Operation(summary = "Retorna uma agencia com base no seu ID.")
+    public Agencia getBuscaAgenciaPorId(@PathVariable Long id){
+        return agenciaService.getAgenciaPeloID(id);
+    }
+
     @PostMapping("/cadastrar")
     @Operation(summary = "Cadastra uma nova agência")
-    public Agencia postCadastrarAgencia(@RequestBody Agencia agencia) {
+    public Agencia postCadastrarAgencia(@Valid @RequestBody Agencia agencia) {
         return agenciaService.postNovaAgencia(agencia);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/deletar/{id}")
     @Operation(summary = "Deleta uma agência com base no seu ID.")
     public void deleteAgencia(@PathVariable Long id){
         agenciaService.deleteAgenciaPeloID(id);

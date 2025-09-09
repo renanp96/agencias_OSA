@@ -1,6 +1,7 @@
 package com.osa.desafio;
 
 
+import com.osa.desafio.agencias.handler.AgenciaNaoEncontrada;
 import com.osa.desafio.agencias.models.Agencia;
 import com.osa.desafio.agencias.repository.AgenciaRepository;
 import com.osa.desafio.agencias.service.AgenciaService;
@@ -20,6 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -64,21 +66,22 @@ public class AgenciaServiceTest {
         Long id = 1L;
         when(agenciaRepository.findById(id)).thenReturn(Optional.of(agencia1));
 
-        Optional<Agencia> resultado = agenciaService.getAgenciaPeloID(id);
+        Agencia resultado = agenciaService.getAgenciaPeloID(id);
 
-        assertThat(resultado).isPresent().contains(agencia1);
+        assertThat(resultado).isEqualTo(agencia1);
         verify(agenciaRepository).findById(id);
     }
 
     @Test
     @DisplayName("Deve retornar Optional vazio se o ID não existir")
-    void deveRetornarOptonalQuandoIdVazio(){
+    void deveLancarExcecaoQuandoIdNaoExistir(){
         Long id = 123L;
         when(agenciaRepository.findById(id)).thenReturn(Optional.empty());
 
-        Optional<Agencia> resultado = agenciaService.getAgenciaPeloID(id);
+        assertThatThrownBy(() -> agenciaService.getAgenciaPeloID(id))
+                .isInstanceOf(AgenciaNaoEncontrada.class)
+                .hasMessage("Agencia não encontrada no sistema.");
 
-        assertThat(resultado).isEmpty();
         verify(agenciaRepository).findById(id);
     }
 
@@ -130,7 +133,6 @@ public class AgenciaServiceTest {
         Long id = 1L;
 
         agenciaService.deleteAgenciaPeloID(id);
-
         verify(agenciaRepository, times(1)).deleteById(id);
     }
 }
