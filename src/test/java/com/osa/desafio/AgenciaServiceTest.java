@@ -43,13 +43,13 @@ public class AgenciaServiceTest {
 
     @BeforeEach
     void setup(){
-        agencia1 = new Agencia(1L, "Agência Perto", 3.0, 4.0);
-        agencia2 = new Agencia(2L, "Agência Média", 6.0, 8.0);
-        agencia3 = new Agencia(3L, "Agência Longe", 10.0, 10.0);
+        agencia1 = new Agencia(1L, "Agência Norte 21", 3.0, 4.0);
+        agencia2 = new Agencia(2L, "Agência Oeste 89", 6.0, 8.0);
+        agencia3 = new Agencia(3L, "Agência Sul 124", 10.0, 10.0);
     }
 
     @Test
-    @DisplayName("Deve retornar todas as agencias")
+    @DisplayName("Deve retornar todas as agências")
     void deveRetornarTodasAgencias(){
         List<Agencia> agencias = Arrays.asList(agencia1, agencia2, agencia3);
         Mockito.when(agenciaRepository.findAll()).thenReturn(agencias);
@@ -61,7 +61,7 @@ public class AgenciaServiceTest {
     }
 
     @Test
-    @DisplayName("Deve retornar agencia se o ID existir")
+    @DisplayName("Deve retornar agência se o ID existir")
     void deveRetornarAgenciaQuandoExistir(){
         Long id = 1L;
         when(agenciaRepository.findById(id)).thenReturn(Optional.of(agencia1));
@@ -73,22 +73,22 @@ public class AgenciaServiceTest {
     }
 
     @Test
-    @DisplayName("Deve retornar Optional vazio se o ID não existir")
+    @DisplayName("Deve retornar Optional vazio se a agência não existir")
     void deveLancarExcecaoQuandoIdNaoExistir(){
         Long id = 123L;
         when(agenciaRepository.findById(id)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> agenciaService.getAgenciaPeloID(id))
                 .isInstanceOf(AgenciaNaoEncontrada.class)
-                .hasMessage("Agencia não encontrada no sistema.");
+                .hasMessage("Agência não encontrada no sistema.");
 
         verify(agenciaRepository).findById(id);
     }
 
     @Test
-    @DisplayName("Deve salvar uma nova agencia corretamente")
+    @DisplayName("Deve salvar uma nova agência corretamente")
     void deveSalvarNovaAgencia(){
-        Agencia novaAgencia = new Agencia(4L, "Nova Agencia", 22.0, -12.0);
+        Agencia novaAgencia = new Agencia(4L, "Nova Agência", 22.0, -12.0);
 
         when(agenciaRepository.save(novaAgencia)).thenReturn(novaAgencia);
 
@@ -96,14 +96,14 @@ public class AgenciaServiceTest {
 
         assertThat(resultado).isNotNull()
                 .hasFieldOrPropertyWithValue("id", 4L)
-                .hasFieldOrPropertyWithValue("nome", "Nova Agencia")
+                .hasFieldOrPropertyWithValue("nome", "Nova Agência")
                 .hasFieldOrPropertyWithValue("coordenadaX", 22.0)
                 .hasFieldOrPropertyWithValue("coordenadaY", -12.0);
         verify(agenciaRepository).save(novaAgencia);
     }
 
     @Test
-    @DisplayName("Deve retornar a agência mais próxima com distância calculada")
+    @DisplayName("Deve retornar uma lista contendo as agências mais próxima com base na distância informada")
     void deveRetornarAgenciaMaisProxima() {
         List<Agencia> todasAgencias = Arrays.asList(agencia1, agencia2, agencia3);
         when(agenciaRepository.findAll()).thenReturn(todasAgencias);
@@ -112,11 +112,14 @@ public class AgenciaServiceTest {
         when(distanciaService.calcularDistancia(0.0, 0.0, 6.0, 8.0)).thenReturn(10.0);
         when(distanciaService.calcularDistancia(0.0, 0.0, 10.0, 10.0)).thenReturn(14.14);
 
-        Map<String, Object> resultado = agenciaService.getAgenciaMaisProxima(0.0, 0.0);
+        List<Map<String, Object>> resultado = agenciaService.getAgenciaMaisProxima(0.0, 0.0);
+        assertThat(resultado).isNotEmpty();
 
-        assertThat(resultado)
+        Map<String, Object> agenciaMaisProxima = resultado.get(0);
+
+        assertThat(agenciaMaisProxima)
                 .containsEntry("id", 1L)
-                .containsEntry("nome", "Agência Perto")
+                .containsEntry("nome", "Agência Norte 21")
                 .containsEntry("coordX", 3.0)
                 .containsEntry("coordY", 4.0)
                 .containsEntry("distancia", 5.0);
@@ -128,7 +131,7 @@ public class AgenciaServiceTest {
     }
 
     @Test
-    @DisplayName("Deve deletar uma agencia com base no ID")
+    @DisplayName("Deve deletar uma agência com base no ID")
     void deveDeletarAgenciaQuandoIdExistir(){
         Long id = 1L;
 

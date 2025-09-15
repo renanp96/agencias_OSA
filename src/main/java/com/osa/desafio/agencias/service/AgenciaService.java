@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AgenciaService {
@@ -23,11 +24,15 @@ public class AgenciaService {
     }
 
     public Agencia getAgenciaPeloID(Long id){
-        return agenciaRepository.findById(id).orElseThrow(() -> new AgenciaNaoEncontrada(("Agencia não encontrada no sistema.")));
+        return agenciaRepository.findById(id).orElseThrow(() -> new AgenciaNaoEncontrada(("Agência não encontrada no sistema.")));
     }
 
-    public Map<String, Object> getAgenciaMaisProxima(Double coordX, Double coordY) {
+    public List<Map<String, Object>> getAgenciaMaisProxima(Double coordX, Double coordY) {
         List<Agencia> agencias = getAgencias();
+
+        if(agencias.isEmpty()){
+            throw new AgenciaNaoEncontrada("Nenhuma agência encontrada");
+        }
 
         return agencias.stream()
                 .map(agencia -> {
@@ -45,13 +50,13 @@ public class AgenciaService {
                     dados.put("distancia", distancia);
                     return dados;
                 })
-                .min(Comparator.comparingDouble(m -> (Double) m.get("distancia")))
-                .orElseThrow(() -> new AgenciaNaoEncontrada(("Nenhuma agencia encontrada.")));
+                .sorted(Comparator.comparingDouble(m -> (Double) m.get("distancia")))
+                .collect(Collectors.toList());
     }
 
     public Agencia postNovaAgencia(Agencia agencia) throws AgenciaJaCadastradaException {
         if(agenciaRepository.existsByNome(agencia.getNome())){
-            throw new AgenciaJaCadastradaException("Agencia já cadastrada no sistema!");
+            throw new AgenciaJaCadastradaException("Agência já cadastrada no sistema!");
         }
         return agenciaRepository.save(agencia);
     }

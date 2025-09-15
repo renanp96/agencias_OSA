@@ -27,7 +27,7 @@ public class AgenciaController {
 
     @GetMapping("/distancia")
     @Operation(summary = "Retorna as agências mais próximas com base nas coordenadas informadas.")
-    public Map<String, Object> getBuscarAgenciaProxima(@RequestParam double coordX, @RequestParam double coordY) {
+    public List<Map<String, Object>> getBuscarAgenciaProxima(@RequestParam double coordX, @RequestParam double coordY) {
         return agenciaService.getAgenciaMaisProxima(coordX, coordY);
     }
 
